@@ -25,7 +25,7 @@ class GenerateQuoteRequest(BaseModel):
     conversation_id: Optional[str] = None
 
 @router.get("/conversations")
-async def get_conversations(current_user: AuthUser = Depends()):
+async def get_conversations(current_user: AuthUser):
     """
     Returns all RFQ conversations with their current status, extracted items, quote headers, and draft replies.
     """
@@ -140,7 +140,7 @@ async def get_conversations(current_user: AuthUser = Depends()):
         return conversations
 
 @router.post("/sync-mailbox")
-async def sync_mailbox(current_user: AuthUser = Depends()):
+async def sync_mailbox(current_user: AuthUser):
     """
     Syncs the mailbox and persists pipeline data to database.
     Runs the exact sync & persistence logic.
@@ -155,7 +155,7 @@ async def sync_mailbox(current_user: AuthUser = Depends()):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/extract-items")
-async def extract_items(req: ConvActionRequest, current_user: AuthUser = Depends()):
+async def extract_items(req: ConvActionRequest, current_user: AuthUser):
     """
     Runs AI line item extraction specifically for a target conversation.
     """
@@ -168,7 +168,7 @@ async def extract_items(req: ConvActionRequest, current_user: AuthUser = Depends
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/generate-quote")
-async def generate_quote(req: GenerateQuoteRequest = GenerateQuoteRequest(), current_user: AuthUser = Depends()):
+async def generate_quote(current_user: AuthUser, req: GenerateQuoteRequest = GenerateQuoteRequest()):
     """
     Triggers inventory matching and quotation draft generation.
     """
@@ -185,7 +185,7 @@ async def generate_quote(req: GenerateQuoteRequest = GenerateQuoteRequest(), cur
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/draft-email")
-async def draft_email(req: QuoteActionRequest, current_user: AuthUser = Depends()):
+async def draft_email(req: QuoteActionRequest, current_user: AuthUser):
     """
     Generates the premium PDF and drafts the reply email.
     """
@@ -200,7 +200,7 @@ async def draft_email(req: QuoteActionRequest, current_user: AuthUser = Depends(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/send-quote")
-async def send_quote(req: QuoteActionRequest, current_user: AuthUser = Depends()):
+async def send_quote(req: QuoteActionRequest, current_user: AuthUser):
     """
     Simulates sending the quotation reply email.
     """
