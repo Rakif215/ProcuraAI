@@ -1,0 +1,46 @@
+# ── Web Framework ────────────────────────────────────────────────────────────
+fastapi
+uvicorn[standard]
+
+# ── Supabase ──────────────────────────────────────────────────────────────────
+supabase
+
+# ── Database (SQLAlchemy async for complex queries) ───────────────────────────
+asyncpg
+sqlalchemy[asyncio]
+
+# ── Agent / LLM ──────────────────────────────────────────────────────────────
+langgraph
+langchain-core
+langchain-groq
+langchain-openai
+
+# ── Auth / Security ───────────────────────────────────────────────────────────
+python-jose[cryptography]
+passlib[bcrypt]
+
+# ── Config ────────────────────────────────────────────────────────────────────
+pydantic[email]
+pydantic-settings
+pydantic
+python-dotenv
+
+# ── HTTP Client ───────────────────────────────────────────────────────────────
+httpx
+
+# ── Background Tasks ──────────────────────────────────────────────────────────
+celery
+redis
+
+# ── Email ─────────────────────────────────────────────────────────────────────
+imapclient
+beautifulsoup4
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+tenacity
+python-multipart
+orjson
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest
+pytest-asyncio

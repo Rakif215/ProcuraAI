@@ -1,0 +1,44 @@
+{
+  "yahoo.com": {
+    "provider_id": "yahoo",
+    "display_name": "Yahoo Mail",
+    "auth_type": "password",
+    "imap_host": "imap.mail.yahoo.com",
+    "imap_port": 993,
+    "imap_security": "ssl",
+    "smtp_host": "smtp.mail.yahoo.com",
+    "smtp_port": 465,
+    "smtp_security": "ssl",
+    "username_strategy": "email",
+    "username_label": "Email address",
+    "help_text": "Use your Yahoo mailbox password or app password if required."
+  },
+  "icloud.com": {
+    "provider_id": "icloud",
+    "display_name": "iCloud Mail",
+    "auth_type": "password",
+    "imap_host": "imap.mail.me.com",
+    "imap_port": 993,
+    "imap_security": "ssl",
+    "smtp_host": "smtp.mail.me.com",
+    "smtp_port": 587,
+    "smtp_security": "starttls",
+    "username_strategy": "email",
+    "username_label": "Email address",
+    "help_text": "Use an Apple app-specific password for iCloud Mail."
+  },
+  "me.com": {
+    "provider_id": "icloud",
+    "display_name": "iCloud Mail",
+    "auth_type": "password",
+    "imap_host": "imap.mail.me.com",
+    "imap_port": 993,
+    "imap_security": "ssl",
+    "smtp_host": "smtp.mail.me.com",
+    "smtp_port": 587,
+    "smtp_security": "starttls",
+    "username_strategy": "email",
+    "username_label": "Email address",
+    "help_text": "Use an Apple app-specific password for iCloud Mail."
+  }
+}

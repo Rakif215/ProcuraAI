@@ -1,0 +1,87 @@
+# generated: 2026-07-12
+# last_updated: 2026-07-12
+# project: ProcuraAI
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: ProcuraAI/_bmad-output/implementation-artifacts
+#
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review
+#   - done: Story completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epics 1-3 from the original Orion plan are 100% complete (PO/Invoice extraction pipeline)
+# - Epics 4-10 are the new ProcuraAI SaaS roadmap stories
+# - Epic 4 (Deployment) and Epic 5 (API Hardening) are the immediate next priorities
+# - Amelia (/amelia) executes stories; John (/john) prioritizes and plans
+
+generated: 2026-07-12
+last_updated: 2026-07-12
+project: ProcuraAI
+project_key: NOKEY
+tracking_system: file-system
+story_location: ProcuraAI/_bmad-output/implementation-artifacts
+
+development_status:
+
+  # ── EPIC 4: Production Deployment & DevOps ─────────────────────────────
+  epic-4: in-progress
+  4-1-github-repository-initialization: in-progress
+  4-2-digitalocean-app-platform-deployment: backlog
+  4-3-github-actions-ci-cd-pipeline: backlog
+  4-4-staging-environment-setup: backlog
+  epic-4-retrospective: optional
+
+  # ── EPIC 5: Frontend API Hardening & Environment Config ────────────────
+  epic-5: backlog
+  5-1-vite-environment-variable-api-base-url: backlog
+  5-2-api-abstraction-layer: backlog
+  5-3-global-error-boundary-and-toast-notifications: backlog
+  epic-5-retrospective: optional
+
+  # ── EPIC 6: RFQ Pipeline Multi-Tenant Hardening ────────────────────────
+  epic-6: in-progress
+  6-1-tenant-scoped-inventory-catalog: in-progress
+  6-2-per-tenant-smtp-credentials-for-quote-dispatch: backlog
+  6-3-inventory-seeding-via-csv-upload: backlog
+  epic-6-retrospective: optional
+
+  # ── EPIC 7: User Onboarding & Account Management ───────────────────────
+  epic-7: backlog
+  7-1-self-service-registration-and-email-verification: backlog
+  7-2-imap-email-account-connection-wizard: backlog
+  7-3-product-catalog-onboarding-step: backlog
+  epic-7-retrospective: optional
+
+  # ── EPIC 8: Quotation PDF & Cloud Storage ──────────────────────────────
+  epic-8: backlog
+  8-1-supabase-storage-for-generated-pdfs: backlog
+  8-2-real-email-delivery-with-attachment: backlog
+  epic-8-retrospective: optional
+
+  # ── EPIC 9: Dashboard Analytics & Reporting ────────────────────────────
+  epic-9: backlog
+  9-1-rfq-kpi-summary-cards: backlog
+  9-2-rfq-activity-chart: backlog
+  9-3-csv-export-of-quotation-history: backlog
+  epic-9-retrospective: optional
+
+  # ── EPIC 10: SaaS Billing & Subscription Tiers ─────────────────────────
+  epic-10: backlog
+  10-1-stripe-product-and-pricing-configuration: backlog
+  10-2-stripe-checkout-and-webhook-integration: backlog
+  10-3-plan-based-feature-gating: backlog
+  epic-10-retrospective: optional
+
+action_items: []
