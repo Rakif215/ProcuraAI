@@ -44,3 +44,7 @@ orjson
 # ── Testing ───────────────────────────────────────────────────────────────────
 pytest
 pytest-asyncio
+
+# ── PDF Generation & Security ──────────────────────────────────────────────────
+reportlab
+cryptography
