@@ -68,6 +68,15 @@ generated_quotes/
 staging/
 __pycache__/
 
+# BMad agent skill folders (AI development tooling — not product code)
+.agents/
+_bmad-output/
+_bmad/
+
 # Scratch / temp
 scratch/
 *.log
+
+# Playwright
+frontend/playwright-report/
+frontend/test-results/

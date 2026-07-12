@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { auth as apiAuth, rfq as apiRfq } from './lib/api';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Mail, 
@@ -68,21 +69,12 @@ const LoginView = ({ onLogin }: { onLogin: (data: any) => void }) => {
     setError(null);
     setLoading(true);
 
-    const endpoint = tab === 'signin' ? 'login' : 'register';
-    const payload = tab === 'signin' 
-      ? { username, password }
-      : { username, password, full_name: fullName || username };
-
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/auth/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const data = tab === 'signin'
+        ? await apiAuth.login(username, password)
+        : await apiAuth.register(username, password, fullName || username);
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || `Authentication failed [${res.status}]`);
+      if (data) {
       }
 
       onLogin(data);
@@ -486,13 +478,7 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
   // Fetch RFQ data
   const fetchConversations = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/rfq-auto/conversations', {
-        headers: getAuthHeaders()
-      });
-      if (!res.ok) {
-        throw new Error(`Server returned status ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await apiRfq.getConversations(authData?.access_token ?? '');
       if (Array.isArray(data)) {
         setConversations(data);
         if (data.length > 0 && !selectedConvIdRef.current) {
@@ -515,10 +501,7 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
   const handleSyncMailbox = async () => {
     setLoading('sync');
     try {
-      await fetch('http://localhost:8000/api/v1/rfq-auto/sync-mailbox', { 
-        method: 'POST',
-        headers: getAuthHeaders()
-      });
+      await apiRfq.syncMailbox(authData?.access_token ?? '');
       await fetchConversations();
     } catch (err) {
       console.error(err);
@@ -531,11 +514,7 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
     if (!selectedConvId) return;
     setLoading('extract');
     try {
-      await fetch('http://localhost:8000/api/v1/rfq-auto/extract-items', {
-        method: 'POST',
-        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ conversation_id: selectedConvId })
-      });
+      await apiRfq.extractItems(authData?.access_token ?? '', selectedConvId);
       await fetchConversations();
     } catch (err) {
       console.error(err);
@@ -548,11 +527,7 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
     if (!selectedConvId) return;
     setLoading('quote');
     try {
-      await fetch('http://localhost:8000/api/v1/rfq-auto/generate-quote', {
-        method: 'POST',
-        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ conversation_id: selectedConvId })
-      });
+      await apiRfq.generateQuote(authData?.access_token ?? '', selectedConvId);
       await fetchConversations();
     } catch (err) {
       console.error(err);
@@ -564,11 +539,7 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
   const handleDraftEmail = async (quoteNumber: string) => {
     setLoading('draft');
     try {
-      await fetch('http://localhost:8000/api/v1/rfq-auto/draft-email', {
-        method: 'POST',
-        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ quote_number: quoteNumber })
-      });
+      await apiRfq.draftEmail(authData?.access_token ?? '', quoteNumber);
       await fetchConversations();
     } catch (err) {
       console.error(err);
@@ -580,11 +551,7 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
   const handleSendQuote = async (quoteNumber: string) => {
     setLoading('send');
     try {
-      await fetch('http://localhost:8000/api/v1/rfq-auto/send-quote', {
-        method: 'POST',
-        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ quote_number: quoteNumber })
-      });
+      await apiRfq.sendQuote(authData?.access_token ?? '', quoteNumber);
       await fetchConversations();
     } catch (err) {
       console.error(err);
@@ -1098,7 +1065,7 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
                           <h4 className="text-xs font-black tracking-widest text-primary uppercase">Quotation Document Preview</h4>
                           {activeConv.draft_email && activeConv.quote && (
                             <a 
-                              href={`http://localhost:8000/api/v1/rfq-auto/download-pdf/${activeConv.quote.quote_number}?token=${authData?.access_token}`}
+                              href={apiRfq.pdfDownloadUrl(activeConv.quote.quote_number, authData?.access_token ?? '')}
                               target="_blank"
                               rel="noreferrer"
                               className="py-1 px-3 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1"
