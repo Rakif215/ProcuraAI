@@ -1019,7 +1019,7 @@ const DashboardView = ({ authData, onOpenAssistant, showToast }: { authData: any
                                           item.match_status === 'FULL_STOCK' ? "bg-emerald-50 text-emerald-700 border-emerald-200/50" :
                                           item.match_status === 'PARTIAL_STOCK' ? "bg-amber-50 text-amber-700 border-amber-200/50" : "bg-rose-50 text-rose-700 border-rose-200/50"
                                         )}>
-                                          {item.match_status.replace('_', ' ')}
+                                          {(item.match_status || '').replace('_', ' ')}
                                         </span>
                                       </td>
                                       <td className="p-3 text-right font-medium">{reqQty.toLocaleString('en-US')} {item.unit || 'pcs'}</td>
@@ -1218,7 +1218,7 @@ const DashboardView = ({ authData, onOpenAssistant, showToast }: { authData: any
                               </div>
                             </div>
                              <div className="flex-1 bg-surface-container-lowest/50 rounded-xl p-3 overflow-y-auto font-mono text-[10px] leading-relaxed text-on-surface border border-outline-variant/10">
-                              {activeConv.draft_email}
+                              {typeof activeConv.draft_email === 'string' ? activeConv.draft_email : activeConv.draft_email?.email_body || ''}
                             </div>
                             <div className="flex items-center gap-2 p-2 bg-surface-container-high/40 rounded-xl border border-outline-variant/10">
                               <FileText className="w-4 h-4 text-primary" />
@@ -1644,6 +1644,7 @@ export default function App() {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    console.log('[TOAST SYSTEM] showToast called with:', message, type);
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, message, type }]);
   };
