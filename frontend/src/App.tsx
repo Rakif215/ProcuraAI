@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Component } from 'react';
 import { auth as apiAuth, rfq as apiRfq } from './lib/api';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -31,7 +31,10 @@ import {
   Leaf,
   Cloud,
   Terminal,
-  Activity
+  Activity,
+  AlertCircle,
+  Info,
+  X
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -441,7 +444,7 @@ const getFriendlySenderName = (conv: any) => {
   return "Procurement Officer";
 };
 
-const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAssistant: () => void }) => {
+const DashboardView = ({ authData, onOpenAssistant, showToast }: { authData: any; onOpenAssistant: () => void; showToast: (msg: string, type: 'success' | 'error' | 'info') => void }) => {
   const [subView, setSubView] = useState<'dashboard' | 'rfq_center'>('rfq_center');
   const [conversations, setConversations] = useState<any[]>([]);
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
@@ -487,8 +490,9 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
       } else {
         setConversations([]);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to fetch RFQ conversations:", err);
+      showToast(err.message || 'Failed to retrieve RFQ conversations', 'error');
       setConversations([]);
     }
   };
@@ -503,8 +507,10 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
     try {
       await apiRfq.syncMailbox(authData?.access_token ?? '');
       await fetchConversations();
-    } catch (err) {
+      showToast('Mailbox synced successfully', 'success');
+    } catch (err: any) {
       console.error(err);
+      showToast(err.message || 'Failed to sync mailbox', 'error');
     } finally {
       setLoading(null);
     }
@@ -516,8 +522,10 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
     try {
       await apiRfq.extractItems(authData?.access_token ?? '', selectedConvId);
       await fetchConversations();
-    } catch (err) {
+      showToast('Items extracted successfully', 'success');
+    } catch (err: any) {
       console.error(err);
+      showToast(err.message || 'Failed to extract line items', 'error');
     } finally {
       setLoading(null);
     }
@@ -529,8 +537,10 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
     try {
       await apiRfq.generateQuote(authData?.access_token ?? '', selectedConvId);
       await fetchConversations();
-    } catch (err) {
+      showToast('Quotation generated successfully', 'success');
+    } catch (err: any) {
       console.error(err);
+      showToast(err.message || 'Failed to generate quotation', 'error');
     } finally {
       setLoading(null);
     }
@@ -541,8 +551,10 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
     try {
       await apiRfq.draftEmail(authData?.access_token ?? '', quoteNumber);
       await fetchConversations();
-    } catch (err) {
+      showToast('Email draft generated successfully', 'success');
+    } catch (err: any) {
       console.error(err);
+      showToast(err.message || 'Failed to create email draft', 'error');
     } finally {
       setLoading(null);
     }
@@ -553,8 +565,10 @@ const DashboardView = ({ authData, onOpenAssistant }: { authData: any; onOpenAss
     try {
       await apiRfq.sendQuote(authData?.access_token ?? '', quoteNumber);
       await fetchConversations();
-    } catch (err) {
+      showToast('Quotation sent to buyer successfully!', 'success');
+    } catch (err: any) {
       console.error(err);
+      showToast(err.message || 'Failed to dispatch quotation email', 'error');
     } finally {
       setLoading(null);
     }
@@ -1504,30 +1518,178 @@ const AssistantView = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
+// --- Error Boundary Component ---
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  readonly props!: ErrorBoundaryProps;
+  state: ErrorBoundaryState = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-surface-container-lowest text-on-surface flex flex-col items-center justify-center p-6 text-center">
+          <div className="glass-card max-w-md p-8 md:p-10 rounded-[2rem] ghost-border flex flex-col items-center space-y-6">
+            <AlertCircle className="w-16 h-16 text-error opacity-80 animate-pulse" />
+            <h1 className="text-2xl font-black tracking-tighter uppercase">System Interrupted</h1>
+            <p className="text-on-surface-variant text-sm font-medium leading-relaxed">
+              ProcuraAI encountered an unexpected runtime error. Your session state is preserved.
+            </p>
+            {this.state.error && (
+              <div className="w-full p-4 bg-surface-container-low rounded-xl text-left overflow-auto max-h-32 text-xs font-mono text-outline">
+                {this.state.error.stack || this.state.error.message}
+              </div>
+            )}
+            <button 
+              onClick={() => window.location.reload()}
+              className="w-full py-3 px-6 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold transition-transform active:scale-95 shadow-lg"
+            >
+              Reset Session
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// --- Toast Component ---
+interface ToastItem {
+  id: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
+interface ToastNotificationProps {
+  toast: ToastItem;
+  onClose: (id: string) => void;
+}
+
+const ToastNotification: React.FC<ToastNotificationProps> = ({ 
+  toast, 
+  onClose 
+}) => {
+  React.useEffect(() => {
+    const timer = setTimeout(() => onClose(toast.id), 5000);
+    return () => clearTimeout(timer);
+  }, [toast, onClose]);
+
+  const config = {
+    success: {
+      bg: 'bg-emerald-950/80',
+      border: 'border-emerald-500/20',
+      text: 'text-emerald-300',
+      icon: <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+    },
+    error: {
+      bg: 'bg-red-950/80',
+      border: 'border-red-500/20',
+      text: 'text-red-300',
+      icon: <AlertCircle className="w-5 h-5 text-red-400" />
+    },
+    info: {
+      bg: 'bg-slate-900/80',
+      border: 'border-white/10',
+      text: 'text-slate-300',
+      icon: <Info className="w-5 h-5 text-primary" />
+    }
+  }[toast.type];
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: -20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+      className={cn(
+        "flex items-center gap-3 p-4 pr-12 rounded-2xl border backdrop-blur-md shadow-2xl relative max-w-sm pointer-events-auto",
+        config.bg,
+        config.border
+      )}
+    >
+      <div className="flex-shrink-0">{config.icon}</div>
+      <p className={cn("text-xs font-semibold leading-relaxed", config.text)}>
+        {toast.message}
+      </p>
+      <button 
+        onClick={() => onClose(toast.id)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-outline/60 hover:text-on-surface transition-colors cursor-pointer"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </motion.div>
+  );
+};
+
 // --- App Entry ---
 export default function App() {
   const [view, setView] = useState<ViewState>('login');
   const [authData, setAuthData] = useState<any>(null);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   return (
-    <div className="font-sans antialiased">
-      <AnimatePresence mode="wait">
-        {view === 'login' && (
-          <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <LoginView onLogin={(data) => { setAuthData(data); setView('dashboard'); }} />
-          </motion.div>
-        )}
-        {view === 'dashboard' && (
-          <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <DashboardView authData={authData} onOpenAssistant={() => setView('assistant')} />
-          </motion.div>
-        )}
-        {view === 'assistant' && (
-          <motion.div key="assistant" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <AssistantView onBack={() => setView('dashboard')} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <ErrorBoundary>
+      <div className="font-sans antialiased">
+        <AnimatePresence mode="wait">
+          {view === 'login' && (
+            <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <LoginView onLogin={(data) => { setAuthData(data); setView('dashboard'); }} />
+            </motion.div>
+          )}
+          {view === 'dashboard' && (
+            <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <DashboardView 
+                authData={authData} 
+                onOpenAssistant={() => setView('assistant')} 
+                showToast={showToast}
+              />
+            </motion.div>
+          )}
+          {view === 'assistant' && (
+            <motion.div key="assistant" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <AssistantView onBack={() => setView('dashboard')} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Global Toast Container */}
+        <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+          <AnimatePresence>
+            {toasts.map((toast) => (
+              <ToastNotification 
+                key={toast.id} 
+                toast={toast} 
+                onClose={removeToast} 
+              />
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
+    </ErrorBoundary>
   );
 }
